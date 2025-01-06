@@ -117,7 +117,7 @@ stergere(){
 #Optiuni de configurare aplicatiei
 configurare(){
     echo "Alegeti o optiune:"
-    select o in "Stergere fisiere" "Redenumire fisiere" "Editare fisiere" "Comprimare fisiere" "Copiere fisiere" "Criptare fisiere"; do
+    select o in "Stergere fisiere" "Redenumire fisiere" "Editare fisiere" "Comprimare fisiere" "Copiere fisiere" "Criptare fisiere" "Generare raport fisiere"; do
         case $o in
             "Stergere fisiere")
                 echo "Introduceti numele directorului din care vor fi sterse fisierele:"
@@ -199,6 +199,24 @@ configurare(){
                 #     echo "Directorul $director nu exista"
                 #fi
                 ;;
+	    "Generare raport fisiere")
+            	echo "Introduceti directorul pentru care doriti raportul:"
+		read director
+
+		#cautam directorul
+		director_gasit=$(find / -type d -name "$director" -print -quit 2>/dev/null)
+		# verificam daca directorul exista
+		if [[ ! -n "$director_gasit" ]]; then
+		    echo "Directorul $director nu exista"
+		    exit 1
+		fi
+
+		#generare raport
+		echo "Raport pentru directorul: $director_gasit"
+		echo "Numar total de fișiere: $(find "$director_gasit" -type f | wc -l)"
+		echo "Dimensiune totala: $(du -sh "$director_gasit" | cut -f1)"
+		echo "Ultima modificare: $(stat -c %y "$director_gasit")"
+		;;
             *)
                 echo "Optiune invalida"
                 ;;
