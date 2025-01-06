@@ -7,7 +7,79 @@ gasire(){
 
 #Mutarea fisierelor
 mutare(){
-    echo "a"
+    echo "Selectati unde doriti sa mutati fisierele:"
+    echo "1. Mutare locala"
+    echo "2. Mutare în Git"
+    read -p "Introduceti optiunea: " optiune
+
+    case $optiune in
+        1)
+            # mutare locala
+            read -p "Introduceti numele fisierului pe care doriti sa il mutati: " fisier
+            # verificam daca fisierul exista in directorul curent
+            if [[ -f "$fisier" ]]; then
+                fisier=$(realpath "$fisier")
+            else
+            	echo "Fiserul $fisier nu exista"
+            	exit 1
+            fi
+
+            read -p "Introduceți directorul in care sa fie mutat fisierul: " director
+            # cauta directorul
+	        director_gasit=$(find / -type d -name "$director" -print -quit 2>/dev/null)
+
+    	    # verificam daca directorul exista
+    	    if [[ -n "$director_gasit" ]]; then
+    	        # daca da, mutam fisierul 
+    	        mv "$fisier" "$director_gasit"
+    	    else
+        		echo "Directorul $director nu exista"
+        		exit 1
+    	    fi
+            
+            echo "Fisierul a fost mutat"
+            ;;
+        2)
+            # mutare în git
+            read -p "Introduceti numele fisierului pe care vreti sa il mutati: " fisier
+            # verificam daca fisierul exista
+            if [[ -f "$fisier" ]]; then
+                read -p "Introduceti numele repository-ului Git local: " repository
+                # cautam repository-ul
+                repository_gasit=$(find / -type d -name "$repository" -exec test -d '{}/.git' \; -print -quit 2>/dev/null)
+                #verificam daca repository-ul exista
+                if [[ -n "$repository/.git" ]]; then
+                   # muta fisierul 
+        		    mv "$fisier" "$repository_gasit"
+        		    
+        		    # merge in directorul unde este clonat repository-ul
+        		    cd "$repository_gasit"
+        		    
+        		    # adauga fisierul
+        		    git add "$(basename "$fisier")"
+        		    
+        		    read -p "Introduceți un mesaj pentru commit: " mesaj
+        		    
+        		    # se realizeaza commit-ul
+        		    git commit -m "$mesaj"
+        		    
+        		    git push origin HEAD
+                    
+                else
+                    echo "Directorul $repository nu exista"
+                    exit 1
+                fi
+            else
+                echo "Fisierul $fisier nu exista"
+                exit 1
+            fi
+            
+            echo "Fisierul a fost mutat in Git"
+            ;;
+        *)
+            echo "Optiune invalida"
+            ;;
+    esac
 }
 
 #Stergerea fisierelor
