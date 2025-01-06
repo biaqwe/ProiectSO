@@ -36,13 +36,70 @@ stergere(){
 #Optiuni de configurare aplicatiei
 configurare(){
     echo "Alegeti o optiune:"
-    select o in "Stergere fisiere" "Redenumire fisiere" "Editare fisiere"; do
+    select o in "Stergere fisiere" "Redenumire fisiere" "Editare fisiere" "Comprimare fisiere" "Copiere fisiere" "Criptare fisiere"; do
         case $o in
             "Stergere fisiere")
+                echo "Introduceti numele directorului din care vor fi sterse fisierele:"
+                read director
+                # if [ -d $director ]; then
+                #     for fisier in $director/*; do
+                #     done
+                # else
+                #     echo "Directorul $director nu exista"
+                #fi
                 ;;
             "Redenumire fisiere")
+                echo "Introduceti numele directorului in care vor fi redenumite fisierele:"
+                read director
+                # if [ -d $director ]; then
+                #     for fisier in $director/*; do
+                #     done
+                # else
+                #     echo "Directorul $director nu exista"
+                #fi
                 ;;
             "Editare fisiere")
+                echo "Introduceti numele directorului in care vor fi editate fisierele:"
+                read director
+                if [ -d $director ]; then
+                    for fisier in $director/*; do
+                        echo "##### DEPRECATED #####" >> $fisier
+                        echo "Fisierul $fisier a fost editat"
+                    done
+                else
+                    echo "Directorul $director nu exista"
+                fi
+                ;;
+            "Comprimare fisiere")
+                echo "Introduceti numele directorului in care vor fi comprimate fisierele:"
+                read director
+                if [ -d $director ]; then
+                    arhiva="$director/backup_$(date +%Y%m%d).zip"
+                    zip -r "$arhiva" "$director"
+                    echo "Arhiva $arhiva a fost creata"
+                else
+                    echo "Directorul $director nu exista"
+                fi
+                ;;
+            "Copiere fisiere")
+                echo "Introduceti numele directorului in care vor fi copiate fisierele:"
+                read director
+                # if [ -d $director ]; then
+                #     for fisier in $director/*; do
+                #     done
+                # else
+                #     echo "Directorul $director nu exista"
+                #fi
+                ;;
+            "Criptare fisiere")
+                echo "Introduceti numele directorului in care vor fi criptate fisierele:"
+                read director
+                # if [ -d $director ]; then
+                #     for fisier in $director/*; do
+                #     done
+                # else
+                #     echo "Directorul $director nu exista"
+                #fi
                 ;;
             *)
                 echo "Optiune invalida"
@@ -67,9 +124,6 @@ help(){
 #Usage
 usage(){
     echo "Exemplu de utilizare:"
-    echo "$0 -f"
-    echo "$0 -m"
-    echo "$0 -s"
 }
 
 #Parsarea optiunilor din linia de comanda cu getopts
@@ -80,7 +134,7 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
-eval set -- $OPTIUNI
+eval set -- "$OPTIUNI"
 
 while true; do
     case $1 in
