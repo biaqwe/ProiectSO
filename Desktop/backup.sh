@@ -41,22 +41,30 @@ configurare(){
             "Stergere fisiere")
                 echo "Introduceti numele directorului din care vor fi sterse fisierele:"
                 read director
-                # if [ -d $director ]; then
-                #     for fisier in $director/*; do
-                #     done
-                # else
-                #     echo "Directorul $director nu exista"
-                #fi
+                if [ -d "$director" ]; then
+                    for fisier in "$director"/*; do
+                        if [ -f "$fisier" ]; then
+                            rm "$fisier"
+                            echo "Fisierul $fisier a fost sters"
+                        fi
+                    done
+                else
+                    echo "Directorul $director nu exista"
+                fi
                 ;;
             "Redenumire fisiere")
                 echo "Introduceti numele directorului in care vor fi redenumite fisierele:"
                 read director
-                # if [ -d $director ]; then
-                #     for fisier in $director/*; do
-                #     done
-                # else
-                #     echo "Directorul $director nu exista"
-                #fi
+                if [ -d "$director" ]; then
+                    for fisier in "$director"/*; do
+                        if [ -f "$fisier" ]; then
+                            mv "$fisier" "$fisier.old"
+                            echo "Fisierul $fisier a fost redenumit in $fisier.old"
+                        fi
+                    done
+                else
+                    echo "Directorul $director nu exista"
+                fi
                 ;;
             "Editare fisiere")
                 echo "Introduceti numele directorului in care vor fi editate fisierele:"
@@ -82,14 +90,23 @@ configurare(){
                 fi
                 ;;
             "Copiere fisiere")
-                echo "Introduceti numele directorului in care vor fi copiate fisierele:"
-                read director
-                # if [ -d $director ]; then
-                #     for fisier in $director/*; do
-                #     done
-                # else
-                #     echo "Directorul $director nu exista"
-                #fi
+                echo "Introduceti numele directorului sursa:"
+                read sursa
+                echo "Introduceti numele directorului destinatie:"
+                read destinatie
+                if [ -d "$sursa" ]; then
+                    if [ ! -d "$destinatie" ]; then
+                        mkdir -p "$destinatie"
+                    fi
+                    for fisier in "$sursa"/*; do
+                        if [ -f "$fisier" ]; then
+                            cp "$fisier" "$destinatie"
+                            echo "Fisierul $fisier a fost copiat in $destinatie"
+                        fi
+                    done
+                else
+                    echo "Directorul sursa $sursa nu exista"
+                fi
                 ;;
             "Criptare fisiere")
                 echo "Introduceti numele directorului in care vor fi criptate fisierele:"
@@ -112,10 +129,6 @@ configurare(){
 help(){
     echo "Utilizare: $0 [optiuni]"
     echo "Optiuni disponibile:"
-    echo "  -f <data>           Gaseste toate fisierele mai vechi de o data calendaristica introdusa"
-    echo "  -m <destinatie>     Muta fisierele intr o locatie specificata/in cloud"
-    echo "  -s <director>       Sterge periodic fisierele vechi"
-    echo "  -c                  Configurarea aplicatiei (stergere, redenumire, editare)"
     echo "  -h, --help          Afiseaza acest mesaj"
     echo "  -u, --usage         Afiseaza un exemplu de utilizare"
     echo "  --debug=on/off      Activeaza/dezactiveaza modul de debug (implicit: off)"
