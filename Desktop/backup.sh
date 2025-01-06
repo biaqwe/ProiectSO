@@ -163,9 +163,11 @@ configurare(){
                 echo "Introduceti numele directorului in care vor fi comprimate fisierele:"
                 read director
                 if [ -d $director ]; then
-                    arhiva="$director/backup_$(date +%Y%m%d).zip"
-                    zip -r "$arhiva" "$director"
-                    echo "Arhiva $arhiva a fost creata"
+                    for fisier in $director/*; do
+                        arhiva="${fisier}_$(date +%Y%m%d).zip"
+                        zip -j "$arhiva" "$fisier"
+                        echo "Fisierul $fisier a fost comprimat in arhiva $arhiva"
+                    done
                 else
                     echo "Directorul $director nu exista"
                 fi
