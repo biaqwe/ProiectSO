@@ -1,36 +1,36 @@
 #!/bin/bash
 
-#Gasirea tuturor fisierelor mai vechi de o data calendaristica introdusa de la STDIN
+#Gasirea tuturor fisierelor mai vechi de o data calendaristica introdusa
 gasire(){
-    read -p "Introduceți o dată sau o perioadă (ex: '2023-12-25', '10 zile', '2 luni' ): " perioada
+    read -p "Introduceti o data sau o perioada (ex: '2023-12-25', '10 zile', '2 luni' ): " perioada
 
     # Validare input
     if [[ ! "$perioada" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ && ! "$perioada" =~ ^[0-9]+[[:space:]]*(zile|luni|ani|saptamani)$ ]]; then
-        echo "Format invalid. Introduceți o dată validă sau o perioadă (ex: '10 zile', '2 luni' )."
+        echo "Format invalid. Introduceti o dată valida sau o perioada (ex: '10 zile', '2 luni' )."
         return
     fi
 
-    # Determinare timp de referință
+    # Determinare timp de referinta
     if [[ "$perioada" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
-        # Dacă este o dată calendaristică
+        # Daca este o data calendaristica
         data_ref="$perioada"
     else
-        # Dacă este o perioadă relativă (zile, luni, ani, etc.)
+        # Daca este o perioada relativa (zile, luni, ani, etc.)
         unitate=$(echo "$perioada" | awk '{print $2}')
         valoare=$(echo "$perioada" | awk '{print $1}')
 
-        # Calcularea datei de referință
+        # Calcularea datei de referinta
         case $unitate in
             zile) data_ref=$(date -d "-$valoare days" +%Y-%m-%d) ;;
             luni) data_ref=$(date -d "-$valoare months" +%Y-%m-%d) ;;
             ani) data_ref=$(date -d "-$valoare years" +%Y-%m-%d) ;;
             saptamani) data_ref=$(date -d "-$((valoare * 7)) days" +%Y-%m-%d) ;;
-            *) echo "Unitate necunoscută. Folosiți 'zile', 'luni', 'ani', 'saptamani'."; return ;;
+            *) echo "Unitate necunoscuta. Folositi 'zile', 'luni', 'ani', 'saptamani'."; return ;;
         esac
     fi
 
     # Cautam fisierele dorite 
-    read -p "Introduceți directorul unde să căutăm fișiere: " director
+    read -p "Introduceti directorul unde să căutăm fisiere: " director
 
     if [[ ! -d "$director" ]]; then
         echo "Directorul $director nu există."
@@ -40,54 +40,6 @@ gasire(){
     echo "Căutăm fișiere mai vechi de $data_ref în directorul $director..."
     find "$director" -type f ! -newermt "$data_ref" -print
 }
-
-criptare(){   
-    # Cere utilizatorului numele directorului care contine fisierele ce trebuie criptate
-    read -p "Introduceti numele directorului care contine fisierele de criptat: " director
-
-    # Verifica daca directorul specificat exista
-    if [[ ! -d "$director" ]]; then
-        echo "Directorul specificat nu exista."
-        return 1
-    fi
-        
-    # Cere utilizatorului sa introduca o cheie de criptare in mod securizat (fara afisare pe ecran)
-    read -p "Introduceti cheia de criptare: " -s cheie
-    echo
-            
-    # Verifica daca cheia de criptare nu este goala
-    if [[ -z "$cheie" ]]; then
-        echo "Cheia de criptare nu poate fi goala."
-        return 1
-    fi
-        
-    # Creeaza un fisier pentru a salva cheia de criptare in directorul specificat
-    fisier_cheie="$director/cheie_decriptare.txt"
-    echo "$cheie" > "$fisier_cheie"
-    # Restrictioneaza accesul la fisierul cheii pentru a fi sigur ca este securizat
-    chmod 600 "$fisier_cheie"
-            
-    # Itereaza prin toate fisierele din directorul specificat
-    for fisier in "$director"/*; do
-        # Verifica daca elementul curent este un fisier
-        if [[ -f "$fisier" ]]; then
-            # Cripteaza fisierul folosind algoritmul AES-256-CBC si salveaza rezultatul intr-un nou fisier
-            openssl enc -aes-256-cbc -salt -in "$fisier" -out "$fisier.enc" -pass pass:"$cheie"
-            if [[ $? -eq 0 ]]; then
-                # Daca criptarea a fost reusita, sterge fisierul original
-                rm "$fisier"
-                echo "Fisierul $fisier a fost criptat cu succes."
-            else
-                # In caz de eroare, afiseaza un mesaj
-                echo "Eroare la criptarea fisierului $fisier."
-            fi
-        fi
-    done
-    
-    # Afiseaza un mesaj final de succes si locatia unde cheia decriptarii a fost salvata
-    echo "Toate fisierele din $director au fost criptate. Cheia este salvata in $fisier_cheie."
-}
-
 
 #Mutarea fisierelor
 mutare(){
@@ -204,9 +156,50 @@ configurare(){
     select o in "Criptare fisiere" "Stergere fisiere" "Redenumire fisiere" "Editare fisiere" "Comprimare fisiere" "Copiere fisiere" "Generare raport fisiere"; do
         case $o in 
             "Criptare fisiere")
-                criptare
+                # Cere utilizatorului numele directorului care contine fisierele de criptat
+                read -p "Introduceti numele directorului care contine fisierele de criptat: " director
+
+                # Verifica daca directorul specificat exista
+                if [[ ! -d "$director" ]]; then
+                    echo "Directorul specificat nu exista."
+                    break
+                fi
+    
+                read -p "Introduceti cheia de criptare: " -s cheie
+                echo
+                
+                # Verifica daca cheia de criptare nu este goala
+                if [[ -z "$cheie" ]]; then
+                    echo "Cheia de criptare nu poate fi goala."
+                    break
+                fi
+
+                # Creaza fisierul daca nu exista deja 
+                touch $director/cheie_decriptare.txt
+                fisier_cheie="$director/cheie_decriptare.txt"
+                echo "$cheie" > "$fisier_cheie" # Scrie cheia in fisierul decriptare
+                chmod 600 "$fisier_cheie" # Restrictioneaza accesul la fisierul cheii pentru a fi mai sigur
+
+                for fisier in "$director"/*; do
+                    if [[ -f "$fisier" ]]; then
+                        # Cripteaza fisierul folosind AES-256-CBC si salveaza cu extensia .enc
+                        openssl enc -aes-256-cbc -salt -in "$fisier" -out "$fisier.enc" -pass pass:"$cheie"
+
+                        # Verifica daca criptarea a fost reusita
+                        if [[ $? -eq 0 ]]; then
+                            # Daca criptarea a avut succes, sterge fisierul original
+                            rm "$fisier"
+                            echo "Fisierul $fisier a fost criptat."
+                        else
+                            echo "Eroare la criptarea fisierului $fisier."
+                        fi
+                    fi
+                done
+
+                echo "Toate fisierele au fost criptate. Cheia este salvata in $fisier_cheie."
                 break
-                ;;
+            ;;
+
             "Stergere fisiere")
                 echo "Introduceti numele directorului din care vor fi sterse fisierele:"
                 read director
