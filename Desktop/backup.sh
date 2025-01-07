@@ -6,7 +6,7 @@ gasire(){
 
     # Validare input
     if [[ ! "$perioada" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ && ! "$perioada" =~ ^[0-9]+[[:space:]]*(zile|luni|ani|saptamani)$ ]]; then
-        echo "Format invalid. Introduceti o dată valida sau o perioada (ex: '10 zile', '2 luni' )."
+        echo "Format invalid. Introduceti o data valida sau o perioada (ex: '10 zile', '2 luni' )."
         return
     fi
 
@@ -30,14 +30,14 @@ gasire(){
     fi
 
     # Cautam fisierele dorite 
-    read -p "Introduceti directorul unde să căutăm fisiere: " director
+    read -p "Introduceti directorul unde sa cautam fisiere: " director
 
     if [[ ! -d "$director" ]]; then
-        echo "Directorul $director nu există."
+        echo "Directorul $director nu exista."
         return
     fi
 
-    echo "Căutăm fișiere mai vechi de $data_ref în directorul $director..."
+    echo "Cautam fisiere mai vechi de $data_ref în directorul $director..."
     find "$director" -type f ! -newermt "$data_ref" -print
 }
 
